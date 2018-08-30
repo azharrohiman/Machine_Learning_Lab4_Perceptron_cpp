@@ -5,15 +5,26 @@
 #include <vector>
 #include <math.h>
 #include <sstream>
-double learning_rate = 0.01;
+double learning_rate = 0.1;
 
 using namespace std;
 
-void train(double* p, double x1, double x2, int output) {
-	int temp = (x1 * p[0]) + (x2 * p[1]) - p[2];
+int learn(double* p, double x1, double x2) {
+	int temp_result = (x1 * p[0]) + (x2 * p[1]) - p[2];
 	int target = 0;
 
-	if (temp > 0) {
+	if (temp_result > 0) {
+		target = 1;
+	}
+
+	return target;
+}
+
+void train(double* p, double x1, double x2, int output) {
+	int temp_result = (x1 * p[0]) + (x2 * p[1]) - p[2];
+	int target = 0;
+
+	if (temp_result > 0) {
 		target = 1;
 	}
 
@@ -50,15 +61,11 @@ void readData(double* p, string filename) {
 	else {
 		cout << "Couldn't open file." << endl;
 	}
+
 	input_file.close();
 
-	int iterations = 100;
-	while (iterations >= 0) {
-
-		for (int i = 0; i < training_data.size(); i++) {
-			train(p, (training_data.at(i))[0], (training_data.at(i))[1], (training_data.at(i))[2]);
-		}
-		iterations--;
+	for (int i = 0; i < training_data.size(); i++) {
+		train(p, (training_data.at(i))[0], (training_data.at(i))[1], (training_data.at(i))[2]);
 	}
 }
 
@@ -71,13 +78,43 @@ int main(int argc, char* argv[]) {
 	double perceptron3[3] = {1.0, 1.0, 1.0};
 
 	readData(perceptron1, "or");
+	readData(perceptron2, "nand");
+	readData(perceptron3, "and");
 
-	for (int i = 0; i < 3; i++) {
-		cout << perceptron1[i] << endl;
+	vector<vector<double>> data;
+
+	vector<double> first;
+	first.push_back(1.0); first.push_back(1.0); first.push_back(0.0);
+
+	vector<double> second;
+	second.push_back(1.0); second.push_back(0.0); second.push_back(1.0);
+
+	vector<double> third;
+	third.push_back(0.0); third.push_back(1.0); third.push_back(1.0);
+
+	vector<double> fourth;
+	fourth.push_back(0.0); fourth.push_back(0.0); fourth.push_back(0.0);
+
+	data.push_back(first);
+	data.push_back(second);
+	data.push_back(third);
+	data.push_back(fourth);
+
+	for (int i = 0; i < data.size(); i++) {
+		int or_result = learn(perceptron1, (data.at(i))[0], (data.at(i))[1]);
+
+		int nand_result = learn(perceptron2, (data.at(i))[0], (data.at(i))[1]);
+
+		int xor_result = learn(perceptron3, or_result, nand_result);
+
+		if (xor_result == 0.0) {
+			cout << "Learned correctly" << endl;
+		}
+
+		else {
+			cout << "Incorrect" << endl;
+		}
 	}
-
-	//train(perceptron2, "nand");
-	//train(perceptron3, "and");
 
 	return 0;
 }
